@@ -21,3 +21,16 @@ module Atomic = struct
     | Some v -> v
   ;;
 end
+
+module Local = struct
+  type 'a t = 'a Base.Or_null.t Ref.Local.t
+
+  let make v = Ref.Local.make (Base.This v)
+  let get_or_null t = Ref.Local.exchange_global t Base.Null
+
+  let get_exn t =
+    match get_or_null t with
+    | Null -> failwith "Once.Local.get_exn failed: already accessed"
+    | This v -> v
+  ;;
+end

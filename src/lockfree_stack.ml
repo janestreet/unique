@@ -1,5 +1,6 @@
 open Base
-open Portable
+open Portable_kernel
+module Backoff = Basement.Stdlib_shim.Backoff
 
 (* SAFETY: This data structure must not expose operations that would duplicate elems. *)
 
