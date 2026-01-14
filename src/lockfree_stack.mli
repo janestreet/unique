@@ -3,8 +3,11 @@ open! Base
 (** A lock-free stack of [once unique] elements. *)
 type !'a t
 
-(** [create ()] creates a new empty stack. *)
-val create : unit -> 'a t
+(** [create ()] creates a new empty stack.
+
+    The optional [padded] argument specifies whether to pad the data structure to avoid
+    false sharing. See {!Atomic.make} for a longer explanation. *)
+val create : ?padded:bool -> unit -> 'a t
 
 (** [is_empty t] determines whether the stack [t] is empty. *)
 val is_empty : 'a t -> bool
