@@ -20,8 +20,8 @@ module Atomic : sig
   (** [make a] creates a reference to a [once unique] value [a]. *)
   val make : 'a -> 'a t
 
-  (** [get_opt t] returns the value inside [t], or [None] if it was already accessed. *)
-  val get_opt : 'a. 'a t -> 'a option
+  (** [get_or_null t] returns the value inside [t], or [Null] if it was already accessed. *)
+  val get_or_null : 'a. 'a t -> 'a or_null
 
   (** [get_exn t] returns the value inside [t], or raises [Failure] if it was already
       accessed. *)

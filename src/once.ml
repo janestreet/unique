@@ -10,15 +10,15 @@ let[@inline] get_exn t =
 ;;
 
 module Atomic = struct
-  type 'a t = 'a option Atomic.t
+  type 'a t = 'a Base.Or_null.t Atomic.t
 
-  let[@inline] make v = Atomic.make (Some v)
-  let[@inline] get_opt t = Atomic.exchange t None
+  let[@inline] make v = Atomic.make (Base.This v)
+  let[@inline] get_or_null t = Atomic.exchange t Base.Null
 
   let[@inline] get_exn t =
-    match Atomic.exchange t None with
-    | None -> Base.failwith "Once.get_exn failed: already accessed"
-    | Some v -> v
+    match Atomic.exchange t Base.Null with
+    | Null -> Base.failwith "Once.get_exn failed: already accessed"
+    | This v -> v
   ;;
 end
 
