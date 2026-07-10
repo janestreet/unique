@@ -1,14 +1,17 @@
-type 'a t = 'a Base.Or_null.t Ref.t
+open! Import
 
-let[@inline] make v = Ref.make (Base.This v)
-let[@inline] take_or_null t = Ref.exchange t Base.Null
+type 'a t = 'a or_null Ref.t
+
+let[@inline] make v = Ref.make (This v)
+let[@inline] take_or_null t = Ref.exchange t Null
 
 let already_accessed fname =
-  failwith (Format.sprintf "Once.%s failed: already accessed" fname)
+  match failwith (Format.sprintf "Once.%s failed: already accessed" fname) with
+  | (_ : nothing) -> .
 ;;
 
 let[@inline] take_exn t =
-  match Ref.exchange t Base.Null with
+  match Ref.exchange t Null with
   | Null -> already_accessed "take_exn"
   | This v -> v
 ;;
@@ -33,8 +36,8 @@ end
 
 module Is_taken__fast : Is_taken = struct
   let is_taken t =
-    match t |> Base.Obj.magic_unique |> Ref.get with
-    | Base.Null -> true
+    match t |> magic_unique |> Ref.get with
+    | Null -> true
     | This _ -> false
   ;;
 end
@@ -44,16 +47,16 @@ include Is_taken__fast
 
 let borrow_or_null (type a : value mod many) (t : a t) ~f =
   match take_or_null t with
-  | Null -> Base.Null
+  | Null -> Null
   | This a ->
     (match f (borrow_ a) with
      | res ->
-       Ref.set t (Base.This a);
-       Base.This res
+       Ref.set t (This a);
+       This res
      | exception exn ->
-       let bt = Base.Backtrace.Exn.most_recent () in
-       Ref.set t (Base.This a);
-       Base.Exn.raise_with_original_backtrace exn bt)
+       let bt = Stdlib.Printexc.get_raw_backtrace () in
+       Ref.set t (This a);
+       Stdlib.Printexc.raise_with_backtrace exn bt)
 ;;
 
 let borrow_exn (type a : value mod many) (t : a t) ~f =
@@ -62,22 +65,23 @@ let borrow_exn (type a : value mod many) (t : a t) ~f =
   | This a ->
     (match f (borrow_ a) with
      | res ->
-       Ref.set t (Base.This a);
+       Ref.set t (This a);
        res
      | exception exn ->
-       let bt = Base.Backtrace.Exn.most_recent () in
-       Ref.set t (Base.This a);
-       Base.Exn.raise_with_original_backtrace exn bt)
+       let bt = Stdlib.Printexc.get_raw_backtrace () in
+       Ref.set t (This a);
+       (match Stdlib.Printexc.raise_with_backtrace exn bt with
+        | (_ : nothing) -> .))
 ;;
 
 module Atomic = struct
-  type 'a t = 'a Base.Or_null.t Atomic.t
+  type 'a t = 'a or_null Atomic.t
 
-  let[@inline] make v = Atomic.make (Base.This v)
-  let[@inline] take_or_null t = Atomic.exchange t Base.Null
+  let[@inline] make v = Atomic.make (This v)
+  let[@inline] take_or_null t = Atomic.exchange t Null
 
   let[@inline] take_exn t =
-    match Atomic.exchange t Base.Null with
+    match Atomic.exchange t Null with
     | Null -> already_accessed "Atomic.take_exn"
     | This v -> v
   ;;
@@ -102,8 +106,8 @@ module Atomic = struct
 
   module Is_taken__fast : Is_taken = struct
     let is_taken t =
-      match t |> Base.Obj.magic_unique |> Atomic.get with
-      | Base.Null -> true
+      match t |> magic_unique |> Atomic.get with
+      | Null -> true
       | This _ -> false
     ;;
   end
@@ -113,16 +117,16 @@ module Atomic = struct
 
   let borrow_or_null (type a : value mod many) (t : a t) ~f =
     match take_or_null t with
-    | Null -> Base.Null
+    | Null -> Null
     | This a ->
       (match f (borrow_ a) with
        | res ->
-         Atomic.set t (Base.This a);
-         Base.This res
+         Atomic.set t (This a);
+         This res
        | exception exn ->
-         let bt = Base.Backtrace.Exn.most_recent () in
-         Atomic.set t (Base.This a);
-         Base.Exn.raise_with_original_backtrace exn bt)
+         let bt = Stdlib.Printexc.get_raw_backtrace () in
+         Atomic.set t (This a);
+         Stdlib.Printexc.raise_with_backtrace exn bt)
   ;;
 
   let borrow_exn (type a : value mod many) (t : a t) ~f =
@@ -131,20 +135,20 @@ module Atomic = struct
     | This a ->
       (match f (borrow_ a) with
        | res ->
-         Atomic.set t (Base.This a);
+         Atomic.set t (This a);
          res
        | exception exn ->
-         let bt = Base.Backtrace.Exn.most_recent () in
-         Atomic.set t (Base.This a);
-         Base.Exn.raise_with_original_backtrace exn bt)
+         let bt = Stdlib.Printexc.get_raw_backtrace () in
+         Atomic.set t (This a);
+         Stdlib.Printexc.raise_with_backtrace exn bt)
   ;;
 end
 
 module Local = struct
-  type 'a t = 'a Base.Or_null.t Ref.Local.t
+  type 'a t = 'a or_null Ref.Local.t
 
-  let make v = exclave_ Ref.Local.make (Base.This v)
-  let take_or_null t = exclave_ Ref.Local.exchange_global t Base.Null
+  let make v = exclave_ Ref.Local.make (This v)
+  let take_or_null t = exclave_ Ref.Local.exchange_global t Null
 
   let take_exn t = exclave_
     match take_or_null t with

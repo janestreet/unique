@@ -1,13 +1,12 @@
 @@ portable
 
-open! Base
 open! Import
 
 (** Dynamically checked references that can only be accessed once. *)
 type 'a t : mutable_data with 'a
 
 (** [make a] creates a reference to a [once unique] value [a]. *)
-val make : 'a @ once unique -> 'a t
+val make : 'a @ once unique -> 'a t @ unique
 
 (** [take_or_null t] returns the value inside [t], or [Null] if it was already accessed. *)
 val take_or_null : 'a t @ local -> 'a or_null @ once unique
@@ -39,7 +38,7 @@ module Atomic : sig
   type (!'a : value) t : immutable_data with 'a @@ contended portable
 
   (** [make a] creates a reference to a [once unique] value [a]. *)
-  val make : 'a @ contended once portable unique -> 'a t
+  val make : 'a @ contended once portable unique -> 'a t @ unique
 
   (** [take_or_null t] returns the value inside [t], or [Null] if it was already accessed. *)
   val take_or_null
@@ -83,7 +82,7 @@ module Local : sig
   type 'a t : mutable_data with 'a
 
   (** [make a] creates a reference to a [local once unique] value [a]. *)
-  val make : 'a @ local once unique -> 'a t @ local
+  val make : 'a @ local once unique -> 'a t @ local unique
 
   (** [take_or_null t] returns the value inside [t], or [Null] if it was already accessed. *)
   val take_or_null : 'a t @ local -> 'a or_null @ local once unique
