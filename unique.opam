@@ -12,9 +12,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "5.2.0"}
-  "base"
   "basement"
-  "portable"
   "ppx_template"
   "dune"         {>= "3.17.0"}
 ]

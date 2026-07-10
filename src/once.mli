@@ -1,4 +1,3 @@
-open! Base
 open! Import
 
 (** Dynamically checked references that can only be accessed once. *)

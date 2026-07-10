@@ -1,4 +1,4 @@
-open! Base
+open! Import
 
 (** A lock-free multi-producer, single-consumer queue of [once unique] elements. *)
 type 'a t
